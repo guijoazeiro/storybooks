@@ -10,7 +10,7 @@ const MongoStore = require('connect-mongo')(session)
 
 const connectDB = require('./config/db')
 
-dotenv.config({path: './config/config.env'})
+dotenv.config({ path: './config/config.env' })
 
 require('./config/passport')(passport)
 
@@ -18,22 +18,30 @@ connectDB()
 
 const app = express()
 
-app.use(express.urlencoded({extended: false}))
+app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'))
+  app.use(morgan('dev'))
 }
 
-app.engine('.hbs', exphbs({ defaultLayout: 'main', extname: '.hbs', }))
+const { formatDate } = require('./helpers/hbs')
+
+app.engine('.hbs', exphbs({
+  helpers: {
+    formatDate
+  },
+  defaultLayout: 'main',
+  extname: '.hbs',
+}))
 app.set('view engine', '.hbs')
 
 app.use(session({
-    secret: 'keyboard cat',
-    resave: false,
-    saveUninitialized: false,
-    store: new MongoStore({mongooseConnection: mongoose.connection})
-  }))
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
+}))
 
 app.use(passport.initialize())
 app.use(passport.session())
